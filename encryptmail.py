@@ -16,15 +16,23 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # }}}
 
+import argparse
 import ConfigParser
+import datetime
 from email.message import Message
 from email.parser import Parser
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.encoders import encode_7or8bit
+import logging
+import os
 import subprocess
 import sys
+import tempfile
+import time
+
+log = logging.getLogger(__name__)
 
 
 def copy_headers(orig, new_outer):
@@ -38,7 +46,7 @@ def copy_headers(orig, new_outer):
     return new_outer
 
 
-def encrypt_mail(ifile, recipients):
+def encrypt_mail(ifile, recipients, contingencydir):
     parser = Parser()
     orig = parser.parse(ifile)
 
@@ -91,25 +99,70 @@ def encrypt_mail(ifile, recipients):
         gpg_message["Content-Disposition"] = "inline"
         new_outer.attach(gpg_message)
     else:
-        local_copy = "/does/not/exist"
+        now = datetime.datetime.now()
+        ofilename = "encryptmail-" + str(now) + "-unencrypted.eml"
+        localcopy = os.path.join(contingencydir, ofilename)
+        try:
+            fd = os.open(localcopy, os.O_WRONLY | os.O_CREAT)
+            out = os.fdopen(fd, "wb")
+            out.write(str(orig))
+            out.close()
+        except:
+            log.error("Storing unencrypted message", exc_info=True)
+            try:
+                with tempfile.NamedTemporaryFile(
+                        prefix="encryptmail-",
+                        suffix="-unencrypted.eml") as out:
+                    out.write(str(orig))
+                    localcopy = out.name
+            except:
+                log.error("Storing unencrypted message in tempdir",
+                          exc_info=True)
+                localcopy = "nowhere (too many exceptions)"
+
         message = """{sep}
 gpg encryption failed with exit status {status}
 
 {errors}
 
-A local copy of the e-mail was stored at {local_copy}
+A local copy of the e-mail was stored at {localcopy}
 {sep}""".format(status=status, errors=errors,
-                local_copy=local_copy, sep="=" * 80)
+                localcopy=localcopy, sep="=" * 80)
         new_outer = MIMEText(message)
 
     new_outer = copy_headers(orig, new_outer)
     return new_outer.as_string()
 
 
+def setup_logging():
+    log.setLevel(logging.DEBUG)
+
+    formatter = logging.Formatter(
+        '%(asctime)s: %(levelname)s: %(message)s',
+    )
+    # Log in UTC
+    formatter.converter = time.gmtime
+
+    console_logger = logging.StreamHandler()
+    console_logger.setLevel(logging.DEBUG)
+    console_logger.setFormatter(formatter)
+    log.addHandler(console_logger)
+
+
 if __name__ == "__main__":
+    argumentparser = argparse.ArgumentParser()
+    argumentparser.add_argument("emailfile", nargs="?", default=None)
+    args = argumentparser.parse_args()
+    setup_logging()
+
     config = ConfigParser.SafeConfigParser()
     configfile = "encryptmail.conf"
-    config.read([configfile])
+    config.read([configfile + ".sample", configfile])
     recipients = config.get("encryptmail", "recipients").split(" ")
-    new_mail = encrypt_mail(sys.stdin, recipients)
+    contingencydir = config.get("encryptmail", "contingencydir")
+    if args.emailfile:
+        with open(args.emailfile) as ifile:
+            new_mail = encrypt_mail(ifile, recipients, contingencydir)
+    else:
+        new_mail = encrypt_mail(sys.stdin, recipients, contingencydir)
     sys.stdout.write(new_mail)

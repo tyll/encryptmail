@@ -50,6 +50,7 @@ def encrypt_mail(ifile, recipients, contingencydir):
     parser = Parser()
     orig = parser.parse(ifile)
 
+    # minimal message with data to be encrypted
     new = Message()
 
     keep_headers = ("Content-Type", "Transfer-Encoding", "Content-Disposition")

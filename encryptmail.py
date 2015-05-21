@@ -64,25 +64,29 @@ def encrypt_mail(ifile, recipients, contingencydir, gpghomedir=None):
     else:
         new.set_payload(orig.get_payload())
 
-    gpg_command = ["gpg"]
-    if gpghomedir:
-        gpg_command.extend(["--homedir", gpghomedir])
-    gpg_command.extend(["--batch", "--quiet", "--no-secmem-warning",
-                        "--no-tty",
-                        "--trust-model", "always",
-                        "--armor", "--output", "-", "--encrypt"])
+    if recipients:
+        gpg_command = ["gpg"]
+        if gpghomedir:
+            gpg_command.extend(["--homedir", gpghomedir])
+        gpg_command.extend(["--batch", "--quiet", "--no-secmem-warning",
+                            "--no-tty",
+                            "--trust-model", "always",
+                            "--armor", "--output", "-", "--encrypt"])
 
-    for r in recipients:
-        gpg_command.append("-r")
-        gpg_command.append(r)
+        for r in recipients:
+            gpg_command.append("-r")
+            gpg_command.append(r)
 
-    popen = subprocess.Popen(gpg_command,
-                             stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
+        popen = subprocess.Popen(gpg_command,
+                                 stdin=subprocess.PIPE,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
 
-    encrypted, errors = popen.communicate(input=str(new))
-    status = popen.returncode
+        encrypted, errors = popen.communicate(input=str(new))
+        status = popen.returncode
+    else:
+        status = "invalid"
+        errors = "No recipients set"
 
     if status == 0:
         new_outer = MIMEMultipart("encrypted",

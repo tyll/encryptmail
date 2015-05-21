@@ -107,7 +107,7 @@ def encrypt_mail(ifile, recipients, contingencydir, gpghomedir=None):
         ofilename = "encryptmail-" + str(now) + "-unencrypted.eml"
         localcopy = os.path.join(contingencydir, ofilename)
         try:
-            fd = os.open(localcopy, os.O_WRONLY | os.O_CREAT)
+            fd = os.open(localcopy, os.O_WRONLY | os.O_CREAT, 0600)
             out = os.fdopen(fd, "wb")
             out.write(str(orig))
             out.close()

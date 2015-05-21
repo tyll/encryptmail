@@ -46,7 +46,7 @@ def copy_headers(orig, new_outer):
     return new_outer
 
 
-def encrypt_mail(ifile, recipients, contingencydir):
+def encrypt_mail(ifile, recipients, contingencydir, gpghomedir=None):
     parser = Parser()
     orig = parser.parse(ifile)
 
@@ -64,10 +64,13 @@ def encrypt_mail(ifile, recipients, contingencydir):
     else:
         new.set_payload(orig.get_payload())
 
-    # maybe set --homedir
-    gpg_command = ["gpg", "--batch", "--quiet", "--no-secmem-warning",
-                   "--no-tty", "--trust-model", "always", "--armor",
-                   "--output", "-", "--encrypt"]
+    gpg_command = ["gpg"]
+    if gpghomedir:
+        gpg_command.extend(["--homedir", gpghomedir])
+    gpg_command.extend(["--batch", "--quiet", "--no-secmem-warning",
+                        "--no-tty",
+                        "--trust-model", "always",
+                        "--armor", "--output", "-", "--encrypt"])
 
     for r in recipients:
         gpg_command.append("-r")
@@ -152,6 +155,13 @@ def setup_logging():
 
 if __name__ == "__main__":
     argumentparser = argparse.ArgumentParser()
+    argumentparser.add_argument("--recipients", default=None,
+                                help="comma separated list of recipients")
+    argumentparser.add_argument("--gpghomedir", default=None,
+                                help="GPG homedir, e.g. ~/.gnupg")
+    argumentparser.add_argument(
+        "--contingencydir", default=None,
+        help="Dir to store mails in case of encryption failure")
     argumentparser.add_argument("emailfile", nargs="?", default=None)
     args = argumentparser.parse_args()
     setup_logging()
@@ -159,11 +169,39 @@ if __name__ == "__main__":
     config = ConfigParser.SafeConfigParser()
     configfile = "encryptmail.conf"
     config.read([configfile + ".sample", configfile])
-    recipients = config.get("encryptmail", "recipients").split(" ")
-    contingencydir = config.get("encryptmail", "contingencydir")
+    if args.recipients:
+        recipients = args.recipients.split(",")
+    else:
+        try:
+            recipients = config.get("encryptmail", "recipients").split(" ")
+        except ConfigParser.NoOptionError:
+            recipients = None
+
+    if args.contingencydir:
+        contingencydir = args.contingencydir
+    else:
+        try:
+            contingencydir = config.get("encryptmail", "contingencydir")
+        except ConfigParser.NoOptionError:
+            contingencydir = "."
+    if contingencydir:
+        contingencydir = os.path.expanduser(contingencydir)
+
+    if args.gpghomedir:
+        gpghomedir = args.gpghomedir
+    else:
+        try:
+            gpghomedir = config.get("encryptmail", "gpghomedir")
+        except ConfigParser.NoOptionError:
+            gpghomedir = None
+    if gpghomedir:
+        gpghomedir = os.path.expanduser(gpghomedir)
+
     if args.emailfile:
         with open(args.emailfile) as ifile:
-            new_mail = encrypt_mail(ifile, recipients, contingencydir)
+            new_mail = encrypt_mail(ifile, recipients, contingencydir,
+                                    gpghomedir)
     else:
-        new_mail = encrypt_mail(sys.stdin, recipients, contingencydir)
+        new_mail = encrypt_mail(sys.stdin, recipients, contingencydir,
+                                gpghomedir)
     sys.stdout.write(new_mail)

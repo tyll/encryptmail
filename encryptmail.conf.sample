@@ -4,3 +4,6 @@ recipients =
 
 # Directory to store messages in if encryption fails
 contingencydir = .
+
+# GnuPG homedir, e.g. ~/.gnupg
+gpghomedir = ~/.gnupg

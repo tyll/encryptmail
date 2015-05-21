@@ -88,7 +88,7 @@ def encrypt_mail(ifile, recipients, contingencydir, gpghomedir=None):
         status = "invalid"
         errors = "No recipients set"
 
-    if status == 0:
+    if status == 0 or "-----BEGIN PGP MESSAGE-----" not in encrypted:
         new_outer = MIMEMultipart("encrypted",
                                   protocol="application/pgp-encrypted")
         new_outer["Transfer-Encoding"] = "7bit"

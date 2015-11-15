@@ -2,22 +2,24 @@
 # vim: fileencoding=utf8
 # SPDX-License-Identifier: GPL-2.0+
 # {{{ License header: GPLv2+
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
+#    This file is part of encryptmail.
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#    Encryptmail is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 2 of the License, or
+#    (at your option) any later version.
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#    Encryptmail is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with encryptmail.  If not, see <http://www.gnu.org/licenses/>.
 # }}}
 
+
 import argparse
-import ConfigParser
 import datetime
 from email.message import Message
 from email.parser import Parser
@@ -30,7 +32,9 @@ import os
 import subprocess
 import sys
 import tempfile
-import time
+
+from encryptmail.config import global_config
+from encryptmail.common import setup_logging
 
 log = logging.getLogger(__name__)
 
@@ -46,9 +50,17 @@ def copy_headers(orig, new_outer):
     return new_outer
 
 
-def encrypt_mail(ifile, recipients, contingencydir, gpghomedir=None):
+def encrypt_mail(inmail, recipients, contingencydir, gpghomedir=None):
     parser = Parser()
-    orig = parser.parse(ifile)
+    if hasattr(inmail, "read"):
+        orig = parser.parse(inmail)
+    else:
+        orig = parser.parsestr(inmail)
+    contingencydir = os.path.expanduser(contingencydir)
+    if gpghomedir:
+        gpghomedir = os.path.expanduser(gpghomedir)
+    if isinstance(recipients, str):
+        recipients = [recipients]
 
     # minimal message with data to be encrypted
     new = Message()
@@ -142,70 +154,41 @@ A local copy of the e-mail was stored at {localcopy}
     return new_outer.as_string()
 
 
-def setup_logging():
-    log.setLevel(logging.DEBUG)
-
-    formatter = logging.Formatter(
-        '%(asctime)s: %(levelname)s: %(message)s',
-    )
-    # Log in UTC
-    formatter.converter = time.gmtime
-
-    console_logger = logging.StreamHandler()
-    console_logger.setLevel(logging.DEBUG)
-    console_logger.setFormatter(formatter)
-    log.addHandler(console_logger)
-
-
 if __name__ == "__main__":
-    argumentparser = argparse.ArgumentParser()
-    argumentparser.add_argument("--recipients", default=None,
+    firstparser = argparse.ArgumentParser(add_help=False)
+
+    # parse this argument first to be able to load config file for defaults
+    firstparser.add_argument("-c", "--configfile",
+                             help="Path to configuration file", metavar="FILE")
+
+    args, unparsed = firstparser.parse_known_args()
+    if args.configfile:
+        global_config.update_yaml_file(args.configfile)
+
+    argumentparser = argparse.ArgumentParser(parents=[firstparser])
+    argumentparser.set_defaults(**global_config.encryption_config)
+    argumentparser.add_argument("--recipients",
                                 help="comma separated list of recipients")
-    argumentparser.add_argument("--gpghomedir", default=None,
+    argumentparser.add_argument("--gpghomedir",
                                 help="GPG homedir, e.g. ~/.gnupg")
     argumentparser.add_argument(
-        "--contingencydir", default=None,
+        "--contingencydir",
         help="Dir to store mails in case of encryption failure")
     argumentparser.add_argument("emailfile", nargs="?", default=None)
     args = argumentparser.parse_args()
     setup_logging()
 
-    config = ConfigParser.SafeConfigParser()
-    configfile = "encryptmail.conf"
-    config.read([configfile + ".sample", configfile])
-    if args.recipients:
+    if args.recipients is None:
+        log.error("At least one recipient is required")
+        sys.exit(1)
+    else:
         recipients = args.recipients.split(",")
-    else:
-        try:
-            recipients = config.get("encryptmail", "recipients").split(" ")
-        except ConfigParser.NoOptionError:
-            recipients = None
-
-    if args.contingencydir:
-        contingencydir = args.contingencydir
-    else:
-        try:
-            contingencydir = config.get("encryptmail", "contingencydir")
-        except ConfigParser.NoOptionError:
-            contingencydir = "."
-    if contingencydir:
-        contingencydir = os.path.expanduser(contingencydir)
-
-    if args.gpghomedir:
-        gpghomedir = args.gpghomedir
-    else:
-        try:
-            gpghomedir = config.get("encryptmail", "gpghomedir")
-        except ConfigParser.NoOptionError:
-            gpghomedir = None
-    if gpghomedir:
-        gpghomedir = os.path.expanduser(gpghomedir)
 
     if args.emailfile:
         with open(args.emailfile) as ifile:
-            new_mail = encrypt_mail(ifile, recipients, contingencydir,
-                                    gpghomedir)
+            new_mail = encrypt_mail(ifile, recipients, args.contingencydir,
+                                    args.gpghomedir)
     else:
-        new_mail = encrypt_mail(sys.stdin, recipients, contingencydir,
-                                gpghomedir)
+        new_mail = encrypt_mail(sys.stdin, recipients, args.contingencydir,
+                                args.gpghomedir)
     sys.stdout.write(new_mail)

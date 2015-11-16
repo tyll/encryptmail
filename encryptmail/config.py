@@ -49,9 +49,6 @@ class Config(object):
                  load_default=True):
         self.config = {}
 
-        # TODO?
-        self.__getitem__ = self.config.__getitem__
-
         if load_default:
             self.update_yaml(DEFAULT_YAML)
         if yaml_file:
@@ -118,6 +115,9 @@ class Config(object):
     @property
     def yaml(self):
         return yaml.dump(self.config, indent=4, default_flow_style=False)
+
+    def __getitem__(self, *args):
+        return self.config.__getitem__(*args)
 
 global_config = Config()
 

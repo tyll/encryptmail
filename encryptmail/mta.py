@@ -55,7 +55,8 @@ class EncryptMTA(SocketServer.StreamRequestHandler):
 
 def start(server_address, spooldir,
           smarthost, local_hostname, sha256_fpr, sender,  # sendmail args
-          gpgrecipients, contingencydir, gpghomedir  # encrypt_mail args
+          gpgrecipients, contingencydir, gpghomedir,  # encrypt_mail args
+          force_recipients=None, force_gpgrecipients=None,
           ):
     try:
         os.unlink(server_address)
@@ -84,12 +85,22 @@ def start(server_address, spooldir,
 
             encryptedmessage = encrypt_mail(mail.message, gpgrecipients,
                                             contingencydir, gpghomedir)
+            if force_recipients is not None:
+                recipients = force_recipients
+                log.info("Mail recipients rewritten from '%r' to '%s'",
+                         mail.recipients, recipients)
+            elif force_gpgrecipients is not None:
+                recipients = gpgrecipients
+                log.info("Mail recipients rewritten from '%r' to gpg "
+                         "recipients '%s'", mail.recipients, recipients)
+            else:
+                recipients = mail.recipients
             try:
                 sendmail(smarthost, local_hostname, sha256_fpr, sender,
-                         mail.recipients, encryptedmessage)
+                         recipients, encryptedmessage)
                 os.unlink(mailfile)
                 log.info("Sent spooled mail %s to %s", mailfile,
-                         mail.recipients)
+                         recipients)
             except:
                 log.error("Error sending mail %s", mailfile, exc_info=True)
 

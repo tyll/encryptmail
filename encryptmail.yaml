@@ -1,0 +1,10 @@
+encryption:
+    # comma-separated list of recipients
+    recipients:
+
+mta:
+    smarthost:
+        address:
+        sha256_fpr:
+        sender_address:
+        local_hostname:

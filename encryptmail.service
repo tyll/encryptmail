@@ -1,0 +1,17 @@
+[Unit]
+Description=Encryptmail Mail Transport Agent
+Requires=network-online.target
+
+[Service]
+WorkingDir=/var/lib/encryptmail
+User=encryptmail
+Group=encryptmail
+UMask=0077
+Type=forking
+ExecStart=/usr/bin/encryptmail-mta
+PrivateTmp=true
+PrivateDevices=ture
+Restart=always
+
+[Install]
+WantedBy=multer-user.target

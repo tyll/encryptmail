@@ -30,16 +30,26 @@ encryption:
     recipients:
 
     # Directory to store messages in if encryption fails
-    contingencydir: .
+    contingencydir: ~/unencrypted_mails
 
     # GnuPG homedir
     gpghomedir: ~/.gnupg
-smtp:
-    spooldir:
-    socket:
+mta:
+    spooldir: /var/spool/encryptmail
+    listen_address: /run/encryptmail/encryptmail.sock
+    force_gpgrecipients:
+    force_recipients:
+    smarthost:
+        address:
+        sha256_fpr:
+        sender_address:
+        local_hostname:
+
 
 # vim: filetype=yaml
 """
+
+SYSTEMCONFIGFILE = "/etc/encryptmail/encryptmail.yaml"
 
 
 class Config(object):

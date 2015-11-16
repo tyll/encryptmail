@@ -1,0 +1,9 @@
+#!/usr/bin/python -tt
+# vim: fileencoding=utf8
+
+from encryptmail.config import global_config, SYSTEMCONFIGFILE
+from encryptmail.sendmail import sendmail
+
+if __name__ == "__main__":
+    global_config.update_yaml_file(SYSTEMCONFIGFILE)
+    sendmail(global_config["mta"]["listen_address"])

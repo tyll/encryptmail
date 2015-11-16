@@ -1,0 +1,35 @@
+#!/usr/bin/python -tt
+# vim: fileencoding=utf8
+
+import socket
+
+from encryptmail.config import global_config, SYSTEMCONFIGFILE
+from encryptmail.mta import start
+
+
+if __name__ == "__main__":
+    global_config.update_yaml_file(SYSTEMCONFIGFILE)
+
+    mta_config = global_config["mta"]
+    server_address = mta_config["listen_address"]
+    spooldir = mta_config["spooldir"]
+    force_recipients = mta_config["force_recipients"]
+    force_gpgrecipients = mta_config["force_gpgrecipients"]
+
+    smarthost_config = mta_config["smarthost"]
+    smarthost = smarthost_config["address"]
+    local_hostname = smarthost_config.get("local_hostname",
+                                          socket.gethostname())
+    sha256_fpr = smarthost_config["sha256_fpr"]
+    sender_address = smarthost_config["sender_address"]
+
+    encryption_config = global_config["encryption"]
+    gpgrecipients = encryption_config["recipients"].split(",")
+    contingencydir = encryption_config["contingencydir"]
+    gpghomedir = encryption_config["gpghomedir"]
+
+    start(server_address, spooldir,
+          smarthost, local_hostname, sha256_fpr, sender_address,
+          gpgrecipients, contingencydir, gpghomedir,
+          force_recipients=force_recipients,
+          force_gpgrecipients=force_gpgrecipients)

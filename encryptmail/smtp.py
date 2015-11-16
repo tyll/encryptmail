@@ -28,7 +28,8 @@ def sendmail(smarthost, local_hostname, sha256_fpr, sender, recipients,
     smtp.starttls()
     server_certificate = smtp.sock.getpeercert(True)
 
-    if hashlib.sha256(server_certificate).hexdigest() != sha256_fpr:
+    sha256_fpr = sha256_fpr.replace(":", "").lower()
+    if hashlib.sha256(server_certificate).hexdigest().lower() != sha256_fpr:
         raise RuntimeError("Bad server certificate")
 
     try:

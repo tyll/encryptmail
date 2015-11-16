@@ -62,7 +62,12 @@ def start(server_address, spooldir,
     except OSError:
         if os.path.exists(server_address):
             raise
+
+    # strict umask for spooled mails
+    os.umask(0077)
     jsonserver = SocketServer.UnixStreamServer(server_address, EncryptMTA)
+    os.chmod(server_address, 0777)
+
     logging.info("Server started at %s", server_address)
     # FIXME: Should be a config option
     jsonserver.timeout = 3600

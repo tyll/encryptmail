@@ -3,11 +3,13 @@
 
 import socket
 
+from encryptmail.common import setup_logging
 from encryptmail.config import global_config, SYSTEMCONFIGFILE
 from encryptmail.mta import start
 
 
 if __name__ == "__main__":
+    setup_logging()
     global_config.update_yaml_file(SYSTEMCONFIGFILE)
 
     mta_config = global_config["mta"]

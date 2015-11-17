@@ -3,4 +3,6 @@
 MANIFEST
 /noarch/
 *.rpm
+/selinux/encryptmail.pp
+/selinux/tmp
 *.tar.gz

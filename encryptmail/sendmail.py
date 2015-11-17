@@ -86,4 +86,4 @@ def sendmail(sockaddr):
 
 
 if __name__ == "__main__":
-    sendmail("encryptmail.sock")
+    sys.exit(sendmail("encryptmail.sock"))

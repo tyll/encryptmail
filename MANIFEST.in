@@ -7,6 +7,6 @@ include Makefile
 include MANIFEST.in
 include selinux/*.fc
 include selinux/*.if
-include selinux/make.sh
+include selinux/Makefile
 include selinux/*.te
 include setup.py

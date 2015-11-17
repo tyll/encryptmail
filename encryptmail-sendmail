@@ -4,10 +4,12 @@
 import sys
 
 
+from encryptmail.common import setup_logging
 from encryptmail.config import global_config, SYSTEMCONFIGFILE
 from encryptmail.sendmail import sendmail
 
 
 if __name__ == "__main__":
+    setup_logging()
     global_config.update_yaml_file(SYSTEMCONFIGFILE)
     sys.exit(sendmail(global_config["mta"]["listen_address"]))

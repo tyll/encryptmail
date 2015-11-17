@@ -21,11 +21,15 @@
 import argparse
 from email.parser import Parser
 import email.utils
+import logging
 import os
 import socket
 import sys
 
-from encryptmail.common import Mail
+from encryptmail.common import Mail, setup_logging
+
+
+log = logging.getLogger(__name__)
 
 
 def connect_and_send(sockaddr, message):
@@ -72,6 +76,9 @@ def sendmail(sockaddr):
             raw_addresses = [x[1] for x in email.utils.getaddresses(
                 other_recipients)]
             args.recipients.extend(raw_addresses)
+    if not args.recipients:
+        log.error("No recipients specified")
+        return 1
     user = os.environ.get("USER", "unknown")
     hostname = os.environ.get("HOSTNAME", "localhost")
     fromaddr = user + "@" + hostname
@@ -82,8 +89,10 @@ def sendmail(sockaddr):
     if success:
         return 0
     else:
+        log.error("Error sending mail to daemon")
         return 1
 
 
 if __name__ == "__main__":
+    setup_logging()
     sys.exit(sendmail("encryptmail.sock"))

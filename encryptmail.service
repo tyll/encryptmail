@@ -7,7 +7,8 @@ WorkingDir=/var/lib/encryptmail
 User=encryptmail
 Group=encryptmail
 UMask=0077
-Type=forking
+# FIXME: maybe use socket activation
+Type=simple
 ExecStart=/usr/bin/encryptmail-mta
 PrivateTmp=true
 PrivateDevices=ture

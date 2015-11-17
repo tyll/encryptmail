@@ -1,0 +1,4 @@
+/usr/bin/encryptmail-mta -- gen_context(system_u:object_r:encryptmail_exec_t,s0)
+/var/lib/encryptmail(/.*)? gen_context(system_u:object_r:encryptmail_var_lib_t,s0)
+/var/run/encryptmail(/.*)? gen_context(system_u:object_r:encryptmail_var_run_t,s0)
+/var/spool/encryptmail(/.*)? gen_context(system_u:object_r:encryptmail_var_spool_t,s0)

@@ -1,0 +1,37 @@
+policy_module(encryptmail, 1.0.0);
+
+type encryptmail_t;
+type encryptmail_exec_t;
+init_daemon_domain(encryptmail_t, encryptmail_exec_t)
+
+type encryptmail_var_run_t;
+files_pid_file(encryptmail_var_run_t)
+
+type encryptmail_var_lib_t;
+files_type(encryptmail_var_lib_t)
+
+type encryptmail_var_spool_t;
+files_spool_file(encryptmail_var_spool_t)
+
+allow encryptmail_t encryptmail_var_run_t:dir manage_dir_perms;
+allow encryptmail_t encryptmail_var_run_t:sock_file manage_sock_file_perms;
+files_pid_filetrans(encryptmail_t, encryptmail_var_run_t, dir)
+
+allow encryptmail_t encryptmail_var_lib_t:dir manage_dir_perms;
+allow encryptmail_t encryptmail_var_lib_t:file manage_file_perms;
+files_var_lib_filetrans(encryptmail_t, encryptmail_var_lib_t, dir)
+
+allow encryptmail_t encryptmail_var_spool_t:dir manage_dir_perms;
+allow encryptmail_t encryptmail_var_spool_t:file manage_file_perms;
+files_spool_filetrans(encryptmail_t, encryptmail_var_spool_t, dir)
+
+auth_use_nsswitch(encryptmail_t)
+
+dev_read_urand(encryptmail_t)
+corenet_tcp_connect_smtp_port(encryptmail_t)
+
+gpg_exec(encryptmail_t)
+
+# this should go to logwatch module:
+gen_require(` type logwatch_t; ')
+stream_connect_pattern(logwatch_t, encryptmail_var_run_t, encryptmail_var_run_t, encryptmail_t)

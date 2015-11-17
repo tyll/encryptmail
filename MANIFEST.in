@@ -5,4 +5,8 @@ include gpl-2.0.txt
 include gpl-3.0.txt
 include Makefile
 include MANIFEST.in
+include selinux/*.fc
+include selinux/*.if
+include selinux/make.sh
+include selinux/*.te
 include setup.py

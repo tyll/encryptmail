@@ -29,6 +29,7 @@ auth_use_nsswitch(encryptmail_t)
 
 dev_read_urand(encryptmail_t)
 corenet_tcp_connect_smtp_port(encryptmail_t)
+kernel_read_system_state(encryptmail_t)
 
 gpg_exec(encryptmail_t)
 

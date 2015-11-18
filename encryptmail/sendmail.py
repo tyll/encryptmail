@@ -50,7 +50,7 @@ def sendmail(sockaddr):
                            action="store_true",
                            help="Add recipients from message headers to "
                                 "recipients specified on commandline")
-    argparser.add_argument("-oi", dest="until_dotline",
+    argparser.add_argument("-oi", "-i", dest="until_dotline",
                            help="Do not treat line consisting of only a "
                            "dot ('.') as end of message",
                            action="store_false", default=True)

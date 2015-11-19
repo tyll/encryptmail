@@ -37,15 +37,17 @@ class Mail(object):
 
         if json_ is not None:
             parsed = json.loads(json_)
-            self.fromaddr = parsed["fromaddr"]
-            self.recipients = parsed["recipients"]
-            self.message = parsed["message"]
+            self.fromaddr = parsed["fromaddr"].encode("latin1")
+            self.recipients = [
+                x.encode("latin1") for x in parsed["recipients"]]
+            self.message = parsed["message"].encode("latin1")
 
     @property
     def json(self):
-        maildata = dict(fromaddr=self.fromaddr,
-                        recipients=self.recipients,
-                        message=self.message)
+        maildata = dict(fromaddr=self.fromaddr.decode("latin1"),
+                        recipients=[
+                            x.decode("latin1") for x in self.recipients],
+                        message=self.message.decode("latin1"))
         return json.dumps(maildata)
 
 

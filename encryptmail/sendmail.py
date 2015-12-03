@@ -76,6 +76,9 @@ def sendmail(sockaddr):
             raw_addresses = [x[1] for x in email.utils.getaddresses(
                 other_recipients)]
             args.recipients.extend(raw_addresses)
+
+        del message["Bcc"]
+        raw_message = message.as_string()
     if not args.recipients:
         log.error("No recipients specified")
         return 1

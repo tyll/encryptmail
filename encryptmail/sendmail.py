@@ -86,11 +86,13 @@ def sendmail(sockaddr):
     if not "Date" in message:
         message.add_header("Date", email.utils.formatdate())
 
-    raw_message = message.as_string()
-
     user = os.environ.get("USER", "unknown")
     hostname = os.environ.get("HOSTNAME", "localhost")
     fromaddr = user + "@" + hostname
+
+    if not "From" in message:
+        message.add_header("From", email.utils.formataddr(("", fromaddr)))
+    raw_message = message.as_string()
 
     mail = Mail(fromaddr=fromaddr, recipients=args.recipients,
                 message=raw_message)

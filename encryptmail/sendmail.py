@@ -65,9 +65,9 @@ def sendmail(sockaddr):
             break
         raw_message += line
 
+    parser = Parser()
+    message = parser.parsestr(raw_message)
     if args.read_message:
-        parser = Parser()
-        message = parser.parsestr(raw_message)
         for header in "To", "Cc", "Bcc":
             other_recipients = message.get_all("Resent-" + header, [])
             if not other_recipients:
@@ -78,10 +78,16 @@ def sendmail(sockaddr):
             args.recipients.extend(raw_addresses)
 
         del message["Bcc"]
-        raw_message = message.as_string()
+
     if not args.recipients:
         log.error("No recipients specified")
         return 1
+
+    if not "Date" in message:
+        message.add_header("Date", email.utils.formatdate())
+
+    raw_message = message.as_string()
+
     user = os.environ.get("USER", "unknown")
     hostname = os.environ.get("HOSTNAME", "localhost")
     fromaddr = user + "@" + hostname

@@ -92,6 +92,10 @@ def sendmail(sockaddr):
 
     if not "From" in message:
         message.add_header("From", email.utils.formataddr(("", fromaddr)))
+
+    if not "Message-Id" in message:
+        message.add_header("Message-Id", email.utils.make_msgid("encryptmail"))
+
     raw_message = message.as_string()
 
     mail = Mail(fromaddr=fromaddr, recipients=args.recipients,

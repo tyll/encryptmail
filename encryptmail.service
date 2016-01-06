@@ -11,7 +11,7 @@ UMask=0077
 Type=simple
 ExecStart=/usr/bin/encryptmail-mta
 PrivateTmp=true
-PrivateDevices=ture
+PrivateDevices=true
 Restart=always
 
 [Install]

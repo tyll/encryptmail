@@ -55,7 +55,9 @@ def sendmail(sockaddr):
                            "dot ('.') as end of message",
                            action="store_false", default=True)
     argparser.add_argument("recipients", nargs="*")
-    args = argparser.parse_args()
+    args, unparsed = argparser.parse_known_args()
+    if unparsed:
+        log.warn("Unparsed commandline options: %s", unparsed)
 
     raw_message = ""
     while True:

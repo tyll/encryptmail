@@ -3,7 +3,7 @@ Description=Encryptmail Mail Transport Agent
 Requires=network-online.target
 
 [Service]
-WorkingDir=/var/lib/encryptmail
+WorkingDirectory=/var/lib/encryptmail
 User=encryptmail
 Group=encryptmail
 UMask=0077
@@ -15,4 +15,4 @@ PrivateDevices=true
 Restart=always
 
 [Install]
-WantedBy=multer-user.target
+WantedBy=multi-user.target

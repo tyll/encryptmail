@@ -89,7 +89,7 @@ def sendmail(sockaddr):
         message.add_header("Date", email.utils.formatdate())
 
     user = os.environ.get("USER", "unknown")
-    hostname = os.environ.get("HOSTNAME", "localhost")
+    hostname = socket.getfqdn()
     fromaddr = user + "@" + hostname
 
     if not "From" in message:

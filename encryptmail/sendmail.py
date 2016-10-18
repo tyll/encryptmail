@@ -71,7 +71,8 @@ def sendmail(sockaddr):
                       unknown)
 
     if unparsed:
-        log.warn("Unparsed commandline options: %s", unparsed)
+        log.warn("Unparsed commandline options: %r", unparsed)
+        log.warn("Full commandline was: %r", sys.argv[1:])
 
     raw_message = ""
     while True:

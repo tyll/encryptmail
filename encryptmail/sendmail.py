@@ -54,6 +54,13 @@ def sendmail(sockaddr):
                            help="Do not treat line consisting of only a "
                            "dot ('.') as end of message",
                            action="store_false", default=True)
+    argparser.add_argument("-F", dest="sender_fullname", help="Sender "
+                           "fullname, only used if there is no From: header. "
+                           "Overrides NAME environment variable.",
+                           default=None)
+    argparser.add_argument("-f", dest="sender_address", help="Sender "
+                           "address.", default=None)
+
     argparser.add_argument("recipients", nargs="*")
     args, unparsed = argparser.parse_known_args()
 
@@ -103,12 +110,21 @@ def sendmail(sockaddr):
     if not "Date" in message:
         message.add_header("Date", email.utils.formatdate())
 
-    user = os.environ.get("USER", "unknown")
-    hostname = socket.getfqdn()
-    fromaddr = user + "@" + hostname
+    if args.sender_address is None:
+        user = os.environ.get("USER", "unknown")
+        hostname = socket.getfqdn()
+        fromaddr = user + "@" + hostname
+    else:
+        fromaddr = args.sender_address
 
     if not "From" in message:
-        message.add_header("From", email.utils.formataddr(("", fromaddr)))
+        if args.sender_fullname is None:
+            sender_fullname = os.environ.get("NAME", "")
+        else:
+            sender_fullname = args.sender_fullname
+
+        message.add_header("From",
+                           email.utils.formataddr((sender_fullname, fromaddr)))
 
     if not "Message-Id" in message:
         message.add_header("Message-Id", email.utils.make_msgid("encryptmail"))

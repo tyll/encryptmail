@@ -56,6 +56,20 @@ def sendmail(sockaddr):
                            action="store_false", default=True)
     argparser.add_argument("recipients", nargs="*")
     args, unparsed = argparser.parse_known_args()
+
+    # Options to silenty ignore
+    # -o: set short config option
+    # search for '[x]' on
+    # http://www.sendmail.org/~ca/email/doc8.12/op-sh-5.html#sh-5.6
+    # to find config optin 'x'
+    # -odi: DeliveryMode: interactively
+    # -oem: ErrorMode: mailback, always exit with zero
+    for unknown in list(unparsed):
+        if unknown.startswith("-od") or unknown.startswith("-oe"):
+            unparsed.remove(unknown)
+            log.debug("Silently ignored unparsed commandline option: %s",
+                      unknown)
+
     if unparsed:
         log.warn("Unparsed commandline options: %s", unparsed)
 

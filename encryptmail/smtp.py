@@ -24,6 +24,8 @@ import hashlib
 
 def sendmail(smarthost, local_hostname, sha256_fpr, sender, recipients,
              message):
+
+    # FIXME: This can probably raise exceptions as well
     smtp = smtplib.SMTP(smarthost, local_hostname=local_hostname)
     smtp.starttls()
     server_certificate = smtp.sock.getpeercert(True)
@@ -37,6 +39,8 @@ def sendmail(smarthost, local_hostname, sha256_fpr, sender, recipients,
     except:
         # FIXME: Handle exception
         raise
+
+    smtp.quit()
     return True
 
 

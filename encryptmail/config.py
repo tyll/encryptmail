@@ -25,6 +25,8 @@ __docformat__ = "restructuredtext"
 import yaml
 
 DEFAULT_YAML = """
+logging:
+    loglevel: DEBUG
 encryption:
     # comma-separated list of recipients
     recipients:

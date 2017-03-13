@@ -51,7 +51,9 @@ class Mail(object):
         return json.dumps(maildata)
 
 
+console_logger = None
 def setup_logging(logger=logging.getLogger(), level=logging.DEBUG):
+    global console_logger
     logger.setLevel(level)
 
     formatter = logging.Formatter(
@@ -64,3 +66,9 @@ def setup_logging(logger=logging.getLogger(), level=logging.DEBUG):
     console_logger.setLevel(level)
     console_logger.setFormatter(formatter)
     logger.addHandler(console_logger)
+
+
+def set_logging_level(loglevel):
+    global console_logger
+    loglevel = getattr(logging, loglevel.upper())
+    console_logger.setLevel(loglevel)

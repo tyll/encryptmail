@@ -38,3 +38,7 @@ install:
 	install -D -p -m 644 encryptmail.yaml $(DESTDIR)$(sysconfdir)/encryptmail/encryptmail.yaml
 	install -D -p -m 644 encryptmail.service $(DESTDIR)$(unitdir)/encryptmail.service
 	install -D -p -m 644 encryptmail-tmpfile.conf $(DESTDIR)$(tmpfiles.d)/encryptmail.conf
+
+srpm:
+	./setup.py sdist
+	/usr/bin/rpmbuild --define "_sourcedir ${PWD}" --define "_rpmdir ${PWD}" --define "_builddir ${PWD}" --define "_srcrpmdir ${PWD}" --define "_speccdir ${PWD}" -bs encryptmail.spec

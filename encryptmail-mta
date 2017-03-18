@@ -11,7 +11,7 @@ from encryptmail.mta import start
 if __name__ == "__main__":
     setup_logging()
     global_config.update_yaml_file(SYSTEMCONFIGFILE)
-    set_logging_level(global_config["logging"]["level"]
+    set_logging_level(global_config["logging"]["loglevel"])
 
     mta_config = global_config["mta"]
     server_address = mta_config["listen_address"]

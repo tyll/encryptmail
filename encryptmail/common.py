@@ -18,6 +18,7 @@
 #    along with encryptmail.  If not, see <http://www.gnu.org/licenses/>.
 # }}}
 
+import email.utils
 import logging
 import time
 try:
@@ -72,3 +73,23 @@ def set_logging_level(loglevel):
     global console_logger
     loglevel = getattr(logging, loglevel.upper())
     console_logger.setLevel(loglevel)
+
+
+def fqdnify_headers(message, hostname, headers=("To", "From", "Cc")):
+    # make all addresses use FQDNs
+    for header in headers:
+        fixed_addresses = []
+        raw_addresses = message.get_all(header)
+        if not raw_addresses:
+            continue
+
+        addresses = email.utils.getaddresses(raw_addresses)
+
+        for name, addr in addresses:
+            if not "@" in addr:
+                addr = addr + "@" + hostname
+            fixed_addresses.append(email.utils.formataddr((name, addr)))
+
+        if fixed_addresses:
+            del message[header]
+            message[header] = ", ".join(fixed_addresses)

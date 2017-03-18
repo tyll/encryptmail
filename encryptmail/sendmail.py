@@ -26,7 +26,7 @@ import os
 import socket
 import sys
 
-from encryptmail.common import Mail, setup_logging
+from encryptmail.common import Mail, setup_logging, fqdnify_headers
 
 
 log = logging.getLogger(__name__)
@@ -91,6 +91,8 @@ def sendmail(sockaddr):
 
     parser = Parser()
     message = parser.parsestr(raw_message)
+    hostname = socket.getfqdn()
+
     if args.read_message:
         for header in "To", "Cc", "Bcc":
             other_recipients = message.get_all("Resent-" + header, [])
@@ -112,7 +114,6 @@ def sendmail(sockaddr):
 
     if args.sender_address is None:
         user = os.environ.get("USER", "unknown")
-        hostname = socket.getfqdn()
         fromaddr = user + "@" + hostname
     else:
         fromaddr = args.sender_address
@@ -128,6 +129,8 @@ def sendmail(sockaddr):
 
     if not "Message-Id" in message:
         message.add_header("Message-Id", email.utils.make_msgid("encryptmail"))
+
+    fqdnify_headers(message, hostname)
 
     raw_message = message.as_string()
 

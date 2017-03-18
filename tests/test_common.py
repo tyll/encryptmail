@@ -7,10 +7,12 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(
     os.path.dirname(__file__), "..")))
 
+import email.parser
 import pytest
 
 import encryptmail.common
 from encryptmail.common import Mail, setup_logging, set_logging_level
+
 
 
 def parse_mail(fromaddr, recipients, message):
@@ -40,3 +42,12 @@ def test_loglevel():
 
     with pytest.raises(AttributeError):
         set_logging_level("invalid_test")
+
+def test_fqdnify():
+    mail = open("tests/mails/03-no-fqdn-to.eml", "rb").read()
+    message = email.parser.Parser().parsestr(mail)
+    assert "root, nobody@example.com" == message["To"]
+    assert "nobody" == message["From"]
+    encryptmail.common.fqdnify_headers(message, "fqdn.example.com")
+    assert "root@fqdn.example.com, nobody@example.com" == message["To"]
+    assert "nobody@fqdn.example.com" == message["From"]

@@ -41,4 +41,5 @@ install:
 
 srpm:
 	./setup.py sdist
+	ln -sf dist/encryptmail-0.tar.gz
 	/usr/bin/rpmbuild --define "_sourcedir ${PWD}" --define "_rpmdir ${PWD}" --define "_builddir ${PWD}" --define "_srcrpmdir ${PWD}" --define "_speccdir ${PWD}" -bs encryptmail.spec
